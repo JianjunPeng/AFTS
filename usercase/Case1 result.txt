@@ -1,0 +1,17 @@
+No clear sideways consolidation range meets all the criteria at the tail end.
+
+The recent price action shows a strong upward move followed by some oscillation around 800–820, but no horizontal range with ≥90 candles, range width ≤2.5% of current price (~816.5), and at least 3 clear touches on upper or lower boundary (with ±0.2% tolerance) stands out in the latest portion.
+
+Closest candidate was roughly 799–819 over ~108 candles, but the width exceeds 2.5%, and touches weren't sufficiently repeated on both sides to qualify cleanly as bull/bear/hybrid per the rules.
+
+So the output is:
+
+```json
+{
+  "hasRange": false,
+  "upper": "0",
+  "lower": "0",
+  "count": 0,
+  "type": "none"
+}
+```
