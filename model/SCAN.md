@@ -41,8 +41,8 @@ Output field explanations:
 
 ## Rules
 1. The price difference between the upper and lower boundaries of the range must not exceed **2.5%** of the asset’s current price level.
-2. The consolidation range must contain **at least 90** intraday (time-based) candlesticks.
-3. Within the range, price must touch the upper boundary **at least 3 times** (qualifies as bull), **or** touch the lower boundary **at least 3 times** (qualifies as bear).
+2. The consolidation range must contain **at least 74** time-based candlesticks.
+3. Within the range, price must touch the upper boundary **at least 2 times** (qualifies as bull), **or** touch the lower boundary **at least 2 times** (qualifies as bear).
 4. A “touch” does **not** need to be exact — a tolerance of **±0.2%** is allowed when checking whether price reached the boundary.
 5. Consecutive touches of the same boundary (upper or lower) must be separated by **at least 10 candlesticks**; otherwise, they count as only **one touch**. This rule applies separately to upper-boundary touches and lower-boundary touches.
 
