@@ -1,0 +1,14 @@
+{
+  "LLM": {
+    "provider": "xai",
+    "model": "grok-4-1-fast-non-reasoning",
+    "api_key": "XAI_API_KEY"
+  },
+  "advisor": {
+    "system": "./advisor/prompt.md",
+    "scan": "./advisor/SCAN.md",
+    "decide": "./advisor/DECIDE.md",
+    "stop": "./advisor/STOP.md"
+  }
+}
+
