@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools >= 61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "afts"
+version = "0.1.0"
+description = "Automated Futures Trading System (AFTS)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "JianjunPeng", email = "walkerpengcook@gmail.com"},
+]
+keywords = ["trading", "finance", "automation"]
+
+dependencies = [
+    "tqsdk",
+    "xai-sdk"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/JianjunPeng/AFTS"
+"Repository" = "git@github.com:JianjunPeng/AFTS.git"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "ruff",
+    "mypy",
+]
+
+[project.scripts]
+afts = "src.main:main"
