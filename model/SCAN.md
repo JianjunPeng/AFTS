@@ -21,7 +21,7 @@ Columns run from left to right in chronological order — the rightmost column i
 ## Output
 ```json
 {
-  "hasRange": True,
+  "hasRange": true,
   "upper": "732.5",
   "lower": "754.5",
   "count": 98,
@@ -35,9 +35,9 @@ Output field explanations:
 - `lower`: the lower boundary price of the consolidation range (set to 0 if `hasRange` is `false`)
 - `count`: number of candlesticks inside the consolidation range (set to 0 if `hasRange` is `false`)
 - `type`: type of consolidation (set to `"none"` if `hasRange` is `false`)
-  - `"bull"` → the range has been touched at the upper boundary **at least 3 times**
-  - `"bear"` → the range has been touched at the lower boundary **at least 3 times**
-  - `"hybrid"` → both the above conditions are met (touched upper ≥3 times AND lower ≥3 times)
+  - `"bull"` → the range has been touched at the upper boundary **at least 2 times**
+  - `"bear"` → the range has been touched at the lower boundary **at least 2 times**
+  - `"hybrid"` → both the above conditions are met (touched upper ≥2 times AND lower ≥2 times)
 
 ## Rules
 1. The price difference between the upper and lower boundaries of the range must not exceed **2.5%** of the asset’s current price level.
