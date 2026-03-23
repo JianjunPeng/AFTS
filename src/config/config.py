@@ -54,13 +54,15 @@ class Config:
 
         # Database section
         db_config = data.get("database") or {}
-        self.db_type: str = db_config.get("type")
-        self.db_name: str = db_config.get("name")
+        self.db_type: str = db_config.get("type", "sqlite")
+        self.db_name: str = db_config.get("name", "afts.db")
 
         # Logging section
         logging_config = data.get("logging") or {}
-        self.log_level: str = logging_config.get("level")
-        self.log_file: str = logging_config.get("file")
+        self.log_level: str = logging_config.get("level", "INFO")
+        self.log_file: str = logging_config.get("file", "afts.log")
+        self.log_max_size: int = logging_config.get("maxBytes", 10*1024*1024)
+        self.log_backup_count: int = logging_config.get("backupCount", 5)
 
         # Unittest section
         unittest_config = data.get("unittest") or {}

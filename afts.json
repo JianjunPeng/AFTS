@@ -16,7 +16,9 @@
   },
   "logging": {
     "level": "INFO",
-    "file": "afts.log"
+    "file": "./logs/afts.log",
+    "maxBytes": 10485760,
+    "backupCount": 5
   },
   "unittest": {
     "default": "./usercase/autocase/default.md",
