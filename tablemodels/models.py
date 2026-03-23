@@ -26,8 +26,8 @@ class Plan(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     symbol = Column(String(20), unique=True, nullable=False)
 
-class Order(Base):
-    __tablename__ = "order"
+class Orders(Base):
+    __tablename__ = "orders"
     order_id = Column(String(50), primary_key=True)
     symbol = Column(String(20), nullable=False)
     direction = Column(String(10))   # buy/sell

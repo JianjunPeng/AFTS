@@ -5,7 +5,7 @@ from sqlalchemy import select, update, delete
 from datetime import datetime
 
 from tablemodels.models import (
-    Instrument, MarketData, Plan, Order, Position, Trade, Account, Log
+    Instrument, MarketData, Plan, Orders, Position, Trade, Account, Log
 )
 
 
@@ -34,7 +34,7 @@ class InstrumentCRUD:
 class MarketDataCRUD:
     @staticmethod
     def create(db: Session, timestamp: datetime, symbol: str, category: str,
-               ohlc: Dict[str, float], conclusion: Optional[str] = None) -> MarketData:
+               ohlc: str, conclusion: Optional[str] = None) -> MarketData:
         obj = MarketData(
             timestamp=timestamp,
             symbol=symbol,
@@ -79,11 +79,11 @@ class PlanCRUD:
 
 
 # ==================== Order ====================
-class OrderCRUD:
+class OrdersCRUD:
     @staticmethod
     def create(db: Session, order_id: str, symbol: str, direction: str,
-               price: float, volume: int, risk: float, status: str) -> Order:
-        obj = Order(
+               price: float, volume: int, risk: float, status: str) -> Orders:
+        obj = Orders(
             order_id=order_id,
             symbol=symbol,
             direction=direction,
@@ -98,20 +98,23 @@ class OrderCRUD:
         return obj
 
     @staticmethod
-    def get_by_order_id(db: Session, order_id: str) -> Optional[Order]:
-        return db.execute(select(Order).where(Order.order_id == order_id)).scalar_one_or_none()
+    def get_by_order_id(db: Session, order_id: str) -> Optional[Orders]:
+        return db.execute(select(Orders).where(Orders.order_id == order_id)).scalar_one_or_none()
 
     @staticmethod
-    def update_status(db: Session, order_id: str, new_status: str) -> Optional[Order]:
+    def update_status(db: Session, order_id: str, new_status: str) -> Optional[Orders]:
         stmt = (
-            update(Order)
-            .where(Order.order_id == order_id)
+            update(Orders)
+            .where(Orders.order_id == order_id)
             .values(status=new_status)
-            .returning(Order)
+            .returning(Orders)
+            .execution_options(synchronize_session="fetch")
         )
         result = db.execute(stmt)
+        updated_order = result.scalar_one_or_none()
         db.commit()
-        return result.scalar_one_or_none()
+        db.refresh(updated_order)
+        return updated_order
 
 
 # ==================== Position ====================
@@ -178,10 +181,14 @@ class TradeCRUD:
                 R=r_value
             )
             .returning(Trade)
+            .execution_options(synchronize_session="fetch")
         )
         result = db.execute(stmt)
+        closed_trade = result.scalar_one_or_none()
         db.commit()
-        return result.scalar_one_or_none()
+        if closed_trade:
+            db.refresh(closed_trade)
+        return closed_trade
 
     @staticmethod
     def get_open_trades(db: Session, symbol: Optional[str] = None) -> List[Trade]:
