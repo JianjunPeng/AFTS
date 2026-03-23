@@ -20,7 +20,7 @@ class Config:
         with open(config_path, encoding="utf-8") as f:
             data = json.load(f)
 
-        # LLM part
+        # LLM section
         model_config = data.get("LLM") or {}
         self.provider: str = model_config.get("provider")
         self.model: str = model_config.get("model")
@@ -30,46 +30,51 @@ class Config:
             if not getattr(self, field):
                 raise ValueError(f"Missing required configuration items: LLM.{field}")
 
-        # advisor part
-        advisor = data.get("advisor") or {}
-        if not isinstance(advisor, dict):
+        # Advisor section
+        advisor_config = data.get("advisor") or {}
+        if not isinstance(advisor_config, dict):
             raise ValueError("advisor must be an object")
 
         base_dir = Path.cwd()
 
         def read_prompt_file(key: str) -> str:
-            rel_path = advisor.get(key)
+            rel_path = advisor_config.get(key)
             if not rel_path:
                 raise ValueError(f"Missing advisor configuration: {key}")
             full_path = (base_dir / rel_path).resolve()
             if not full_path.is_file():
                 raise FileNotFoundError(f"File not found: {full_path}")
             with open(full_path, encoding="utf-8") as f:
-                return f.read().strip()
+                return f.read()
 
         self.advisor_system = read_prompt_file("system")
         self.advisor_scan   = read_prompt_file("scan")
         self.advisor_decide = read_prompt_file("decide")
-        self.advisor_stop   = read_prompt_file("stop")
+        self.advisor_loss   = read_prompt_file("loss")
 
-#    @property
-#    def provider(self) -> str:
-#        return self.provider
-#
-#    @property
-#    def model(self) -> str:
-#        return self.model
-#
-#    @property
-#    def api_key(self) -> str:
-#        return self.api_key
+        # Database section
+        db_config = data.get("database") or {}
+        self.db_type: str = db_config.get("type")
+        self.db_name: str = db_config.get("name")
+
+        # Logging section
+        logging_config = data.get("logging") or {}
+        self.log_level: str = logging_config.get("level")
+        self.log_file: str = logging_config.get("file")
+
+        # Unittest section
+        unittest_config = data.get("unittest") or {}
+        self.unittest_default: str = unittest_config.get("default")
+        self.unittest_scanPath: str = unittest_config.get("scanPath")
+        self.unittest_decidePath: str = unittest_config.get("decidePath")
+        self.unittest_lossPath: str = unittest_config.get("lossPath")
 
     def get_advisor_prompt(self, stage: str) -> str:
         prompts = {
             "system": self.advisor_system,
             "scan":   self.advisor_scan,
             "decide": self.advisor_decide,
-            "stop":   self.advisor_stop
+            "loss":   self.advisor_loss
         }
         if stage not in prompts:
             raise ValueError(f"Unknown advisor stage: {stage}")

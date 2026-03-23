@@ -8,7 +8,21 @@
     "system": "./advisor/prompt.md",
     "scan": "./advisor/SCAN.md",
     "decide": "./advisor/DECIDE.md",
-    "stop": "./advisor/STOP.md"
+    "loss": "./advisor/LOSS.md"
+  },
+  "database": {
+    "type": "sqlite",
+    "name": "afts.db"
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "afts.log"
+  },
+  "unittest": {
+    "default": "./usercase/autocase/default.md",
+    "scanPath": "./usercase/autocase/SCAN/",
+    "decidePath": "./usercase/autocase/DECIDE/",
+    "lossPath": "./usercase/autocase/LOSS/"
   }
 }
 

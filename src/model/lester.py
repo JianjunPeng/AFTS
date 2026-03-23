@@ -1,15 +1,118 @@
+import os
+import re
+import json
+
 from ..config.config import Config
+from xai_sdk import Client
+from xai_sdk.chat import system, user
 
-# 获取配置实例（单例，所以随便哪调用都一样）
-config = Config.get()           # 或者直接 Config() 也行，看你喜欢
+class Lester:
+    def __init__(self):
+        config = Config.get()
 
-# 使用方式
-print(config.provider)          # "xai"
-print(config.model)             # "grok-4-1-fast-non-reasoning"
-print(config.api_key)           # "XAI_API_KEY" 或实际的密钥
+        self.system = config.get_advisor_prompt("system")
+        self.scan = config.get_advisor_prompt("scan")
+        self.decide = config.get_advisor_prompt("decide")
+        self.loss = config.get_advisor_prompt("loss")
 
-# 如果要用 advisor 的 prompt
-system_prompt = config.get_advisor_prompt("system")
-scan_prompt   = config.get_advisor_prompt("scan")
+        print("API Key: " + config.api_key)
+        print(config.model)
+        api_key = os.getenv(config.api_key)
+        if not api_key:
+            raise ValueError(config.api_key + "not found in environment variables!")
 
-print(system_prompt)            # 会输出 ./advisor/prompt.md 里的内容
+        self.client = Client(api_key)
+        self.chat = self.client.chat.create(model=config.model)
+        # Pre-configure system prompt if supported by the SDK
+        self.chat.append(system(self.system))
+
+
+    def ClearUserMessages(self):
+        # Helper method to clear user messages while keeping system prompt
+        while self.chat.messages and self.chat.messages[-1].role != "system":
+            self.chat.messages.pop()
+
+
+    def ParseModelResponse(self, text: str) -> dict:
+        """
+        Model is expected to return a JSON string that can be parsed into a dict with the specified structure
+        Remove code block markers (```json ... ```) if present, and strip leading/trailing whitespace
+        """
+        start = text.find('{')
+        end = text.rfind('}') + 1
+
+        if start == -1 or end == 0:
+            return {}
+
+        cleaned = text[start:end]
+        print("Cleaned response: \n" + cleaned)
+
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            return {}
+
+
+    def Scan(self, text: str) -> dict:
+        """
+        Input: a piece of text (usually market/price description)
+        Output: a json dict with fixed structure
+        """
+        # Before calling the model, we clear any previous user messages to ensure a clean state
+        self.ClearUserMessages()
+
+        # Generate the content for the model by combining the scan prompt with the input text
+        content = self.scan + "So, analyze the following data:\n" + text
+
+        # Require for saving the user message for debugging and traceability
+        #print("User prompt: " + content)
+
+        self.chat.append(user(content))
+        response = self.chat.sample()
+
+        # Require for saving the model response for debugging and traceability
+        print("Model response: \n" + response.content)
+        result = self.ParseModelResponse(response.content)
+        print("Parsed result: \n" + str(result))
+
+        # Make sure to return a fixed structure (even if the model output is incorrect, fill in default values)
+        return {
+            "hasRange": result.get("hasRange", False),
+            "upper": result.get("upper", "0"),
+            "lower": result.get("lower", "0"),
+            "count": result.get("count", 0),
+            "type": result.get("type", "none")
+        }
+
+
+    def Decide(self, text: str) -> dict:
+        """
+        待实现：目前返回空结构，后面根据需求补充
+        """
+        # 类似 Scan 的调用逻辑，但使用 decide prompt
+        return {
+            "action": "wait",
+            "reason": "待实现",
+            "confidence": 0.0
+        }
+
+
+    def Loss(self, text: str) -> dict:
+        """
+        待实现：目前返回空结构，后面补充止损/风控逻辑
+        """
+        return {
+            "should_stop": False,
+            "reason": "待实现",
+            "risk_level": "low"
+        }
+
+
+# For testing purposes
+if __name__ == "__main__":
+    with open(Config.get().unittest_default, "r", encoding="utf-8") as f:
+        sample_text = f.read()
+
+    lester = Lester()
+    result = lester.Scan(sample_text)
+    print(result)
