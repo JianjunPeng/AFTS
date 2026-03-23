@@ -42,9 +42,9 @@ def test_all_crud():
 
         # 1. Instrument
         print("测试 Instrument...")
-        instr = InstrumentCRUD.create(db, exchange="BINANCE", code="BTCUSDT", month=None, multiplier=1)
+        instr = InstrumentCRUD.create(db, exchange="BINANCE", code="BTCUSDT", month="2605", multiplier=1)
         print(f"创建: {instr.exchange}/{instr.code}")
-        found = InstrumentCRUD.get_by_exchange_code(db, "BINANCE", "BTCUSDT")
+        found = InstrumentCRUD.get_by_exchange_code(db, "BINANCE", "BTCUSDT", "2605")
         print(f"查询: {found.code if found else 'Not found'}")
         all_instr = InstrumentCRUD.get_all(db)
         print(f"总数: {len(all_instr)}\n")

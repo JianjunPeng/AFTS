@@ -20,9 +20,9 @@ class InstrumentCRUD:
         return obj
 
     @staticmethod
-    def get_by_exchange_code(db: Session, exchange: str, code: str) -> Optional[Instrument]:
+    def get_by_exchange_code(db: Session, exchange: str, code: str, month: str) -> Optional[Instrument]:
         return db.execute(
-            select(Instrument).where(Instrument.exchange == exchange, Instrument.code == code)
+            select(Instrument).where(Instrument.exchange == exchange, Instrument.code == code, Instrument.month == month)
         ).scalar_one_or_none()
 
     @staticmethod
