@@ -72,6 +72,11 @@ class Logger:
         self.logger.critical(msg, *args, **kwargs)
 
 
+    @classmethod
+    def get(cls):
+        return cls()
+    
+
 # For testing purposes
 if __name__ == "__main__":
     logger = Logger()
@@ -80,3 +85,4 @@ if __name__ == "__main__":
     logger.warning("test...")
     logger.error("test...")
     logger.critical("test...")
+

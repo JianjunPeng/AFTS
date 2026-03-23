@@ -3,6 +3,7 @@ import re
 import json
 
 from ..config.config import Config
+from ..logging.logger import Logger
 from xai_sdk import Client
 from xai_sdk.chat import system, user
 
@@ -15,11 +16,12 @@ class Lester:
         self.decide = config.get_advisor_prompt("decide")
         self.loss = config.get_advisor_prompt("loss")
 
-        print("API Key: " + config.api_key)
-        print(config.model)
         api_key = os.getenv(config.api_key)
         if not api_key:
             raise ValueError(config.api_key + "not found in environment variables!")
+
+        Logger.get().info("API Key loaded successfully: %s...", api_key[:16])
+        Logger.get().info("Model: %s", config.model)
 
         self.client = Client(api_key)
         self.chat = self.client.chat.create(model=config.model)
@@ -28,7 +30,9 @@ class Lester:
 
 
     def ClearUserMessages(self):
-        # Helper method to clear user messages while keeping system prompt
+        """
+        Helper method to clear user messages while keeping system prompt
+        """
         while self.chat.messages and self.chat.messages[-1].role != "system":
             self.chat.messages.pop()
 
@@ -45,7 +49,7 @@ class Lester:
             return {}
 
         cleaned = text[start:end]
-        print("Cleaned response: \n" + cleaned)
+        Logger.get().info("Cleaned response: \n" + cleaned)
 
         try:
             return json.loads(cleaned)
@@ -65,15 +69,13 @@ class Lester:
         content = self.scan + "So, analyze the following data:\n" + text
 
         # Require for saving the user message for debugging and traceability
-        #print("User prompt: " + content)
+        Logger.get().info(text)
 
         self.chat.append(user(content))
         response = self.chat.sample()
 
         # Require for saving the model response for debugging and traceability
-        print("Model response: \n" + response.content)
         result = self.ParseModelResponse(response.content)
-        print("Parsed result: \n" + str(result))
 
         # Make sure to return a fixed structure (even if the model output is incorrect, fill in default values)
         return {
