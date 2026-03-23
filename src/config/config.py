@@ -56,6 +56,7 @@ class Config:
         db_config = data.get("database") or {}
         self.db_type: str = db_config.get("type", "sqlite")
         self.db_name: str = db_config.get("name", "afts.db")
+        self.db_url: str = db_config.get("url", "sqlite:///./data/afts.db")
 
         # Logging section
         logging_config = data.get("logging") or {}

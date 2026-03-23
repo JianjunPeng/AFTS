@@ -12,7 +12,8 @@
   },
   "database": {
     "type": "sqlite",
-    "name": "afts.db"
+    "name": "afts.db",
+    "url": "sqlite:///./data/afts.db"
   },
   "logging": {
     "level": "INFO",

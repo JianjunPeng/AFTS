@@ -12,11 +12,13 @@ license = {text = "MIT"}
 authors = [
     {name = "JianjunPeng", email = "walkerpengcook@gmail.com"},
 ]
-keywords = ["trading", "finance", "automation"]
+keywords = ["trading", "futures", "automation"]
 
 dependencies = [
     "tqsdk",
     "xai-sdk"
+    "sqlalchemy"
+    "alembic"
 ]
 
 [project.urls]
