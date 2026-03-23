@@ -8,7 +8,7 @@ class Instrument(Base):
     __tablename__ = "instrument"
     id = Column(Integer, primary_key=True, autoincrement=True)
     exchange = Column(String(10), nullable=False)
-    code = Column(String(20), nullable=False)
+    code = Column(String(10), nullable=False)
     month = Column(String(6))
     multiplier = Column(Integer)
 
@@ -18,7 +18,7 @@ class MarketData(Base):
     timestamp = Column(DateTime, nullable=False)
     symbol = Column(String(20), nullable=False)
     category = Column(String(20))
-    ohlc = Column(JSON)          # 存 {'open':xx, 'high':xx, ...}
+    ohlc = Column(Text)
     conclusion = Column(Text)
 
 class Plan(Base):
