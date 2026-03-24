@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from ..config.config import Config
+from tablemodels import Base
 
-config = Config()
-engine = create_engine(config.db_url, echo=False, future=True)
+engine = create_engine(Config.get().db_url, echo=False, future=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
@@ -15,13 +15,11 @@ def get_db():
 
 def clear_db():
     """Clear all data from the database (for testing purposes)"""
-    from tablemodels import Base
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 def init_db():
     """Initialize database tables (for development use)"""
-    from tablemodels import Base
     Base.metadata.create_all(bind=engine)
 
 

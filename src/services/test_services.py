@@ -1,31 +1,13 @@
 # src/services/test_services.py
-# 运行方式：python src/services/test_services.py
+# 运行方式：python -m src.services.test_services
 
-import sys
-import os
-from datetime import datetime, timezone
-
-# 把项目根目录加入 sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
-from sqlalchemy.orm import Session
-from src.database.session import SessionLocal, engine
-from tablemodels.models import Base
-
-# 导入所有 Service
-from src.services.log_service import LogService
-from src.services.position_service import PositionService
-from src.services.trade_service import TradeService
-from src.services.order_service import OrderService
-from src.services.instrument_service import InstrumentService
-from src.services.market_data_service import MarketDataService
-from src.services.account_service import AccountService
+from src.database import clear_db
+from tablemodels  import Base
+from src.services import *
 
 
 def test_all_services():
-    # 先清空数据库（测试专用）
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    clear_db()  # 清空数据库，确保测试环境干净
     print("=== 已清空并重建数据库，开始测试 Services ===\n")
 
     try:

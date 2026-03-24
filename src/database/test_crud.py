@@ -1,31 +1,15 @@
 # src/database/test_crud.py
-# 运行方式：python src/database/test_crud.py
+# 运行方式：python -m src.database.test_crud
 
-import sys
-import os
 from datetime import datetime
 
-# 把项目根目录加到 sys.path（最稳的方式）
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
-# 然后用绝对路径导入（从 src 开始）
-from sqlalchemy.orm import Session
-
-from src.database.session import SessionLocal, engine, clear_db, init_db
-from tablemodels.models import (
-    Base, Instrument, MarketData, Plan, Orders, Position, Trade, Account, Log
-)
-from src.database.crud import (
-    InstrumentCRUD, MarketDataCRUD, PlanCRUD, OrdersCRUD,
-    PositionCRUD, TradeCRUD, AccountCRUD, LogCRUD
-)
-
-# 先确保表存在（开发阶段用）
-Base.metadata.create_all(bind=engine)
+from tablemodels  import *
+from src.database import *
+from src.database import SessionLocal, clear_db
 
 def test_all_crud():
-    db: Session = SessionLocal()
-    
+    db = SessionLocal()
+
     clear_db()  # 清空数据库，确保测试环境干净
     print("=== 已清空所有测试表，开始测试所有 CRUD 接口 ===\n")
 
