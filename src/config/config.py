@@ -58,6 +58,35 @@ class Config:
         self.db_name: str = db_config.get("name", "afts.db")
         self.db_url: str = db_config.get("url", "sqlite:///./data/afts.db")
 
+        # TqSdk section
+        tqsdk_config = data.get("tqsdk") or {}
+        if not isinstance(tqsdk_config, dict):
+            raise ValueError("tqsdk must be an object")
+
+        tqsdk_auth = tqsdk_config.get("auth") or {}
+        if not isinstance(tqsdk_auth, dict):
+            raise ValueError("tqsdk.auth must be an object")
+
+        self.tqsdk_auth_username: str = tqsdk_auth.get("username")
+        self.tqsdk_auth_password: str = tqsdk_auth.get("password")
+        self.tqsdk_auth_demotrading: bool = bool(tqsdk_auth.get("demotrading", False))
+
+        for field in ("tqsdk_auth_username", "tqsdk_auth_password"):
+            if not getattr(self, field):
+                raise ValueError(f"Missing required configuration items: tqsdk.auth.{field.split('_')[-1]}")
+
+        tqsdk_account = tqsdk_config.get("account") or {}
+        if not isinstance(tqsdk_account, dict):
+            raise ValueError("tqsdk.account must be an object")
+
+        self.tqsdk_account_broker: str = tqsdk_account.get("broker")
+        self.tqsdk_account_userid: str = tqsdk_account.get("userid")
+        self.tqsdk_account_password: str = tqsdk_account.get("password")
+
+        for field in ("tqsdk_account_broker", "tqsdk_account_userid", "tqsdk_account_password"):
+            if not getattr(self, field):
+                raise ValueError(f"Missing required configuration items: tqsdk.account.{field.split('_')[-1]}")
+
         # Logging section
         logging_config = data.get("logging") or {}
         self.log_level: str = logging_config.get("level", "INFO")
