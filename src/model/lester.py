@@ -1,10 +1,8 @@
 import os
-import re
 import json
 
-from ..config.config import Config
-from ..logging.logger import Logger
-from ..services.log_service import LogService
+from ..config   import Config
+from ..logging  import Logger
 
 from xai_sdk import Client
 from xai_sdk.chat import system, user
@@ -27,7 +25,7 @@ class Lester:
 
         self.client = Client(api_key)
         self.chat = self.client.chat.create(model=config.model)
-        # Pre-configure system prompt if supported by the SDK
+        # Pre-configure system prompt for the chat session
         self.chat.append(system(self.system))
 
 
@@ -71,12 +69,13 @@ class Lester:
         content = self.scan + "So, analyze the following data:\n" + text
 
         # Require for saving the user message for debugging and traceability
-        LogService().log(level="INFO", message="Lester Scan input", module="lester.scan")
+        Logger.get().debug("User input for Scan:\n" + text)
 
         self.chat.append(user(content))
         response = self.chat.sample()
-
         # Require for saving the model response for debugging and traceability
+        Logger.get().debug("Model response for Scan:\n" + response.content)
+
         result = self.ParseModelResponse(response.content)
 
         # Make sure to return a fixed structure (even if the model output is incorrect, fill in default values)

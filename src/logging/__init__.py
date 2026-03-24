@@ -1,2 +1,3 @@
 # src/logging/__init__.py
-"""AFTS project source code package initializer."""
+from .logger import Logger
+__all__ = ["Logger"]
