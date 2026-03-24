@@ -13,8 +13,14 @@ def get_db():
     finally:
         db.close()
 
-# 初始化表（开发时用）
+def clear_db():
+    """Clear all data from the database (for testing purposes)"""
+    from tablemodels import Base
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
 def init_db():
+    """Initialize database tables (for development use)"""
     from tablemodels import Base
     Base.metadata.create_all(bind=engine)
 

@@ -12,7 +12,7 @@ from tablemodels.models import (
 # ==================== Instrument ====================
 class InstrumentCRUD:
     @staticmethod
-    def create(db: Session, exchange: str, code: str, month: Optional[str] = None, multiplier: Optional[int] = None) -> Instrument:
+    def create(db: Session, exchange: str, code: str, month: str, multiplier: Optional[int] = 1) -> Instrument:
         obj = Instrument(exchange=exchange, code=code, month=month, multiplier=multiplier)
         db.add(obj)
         db.commit()
@@ -138,6 +138,10 @@ class PositionCRUD:
             db.commit()
             db.refresh(obj)
             return obj
+
+    @staticmethod
+    def get_position(db: Session, symbol: str) -> Optional[Position]:
+        return db.query(Position).filter(Position.symbol == symbol).first()
 
     @staticmethod
     def get_all(db: Session) -> List[Position]:

@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 # 然后用绝对路径导入（从 src 开始）
 from sqlalchemy.orm import Session
 
-from src.database.session import SessionLocal, engine, init_db
+from src.database.session import SessionLocal, engine, clear_db, init_db
 from tablemodels.models import (
     Base, Instrument, MarketData, Plan, Orders, Position, Trade, Account, Log
 )
@@ -25,21 +25,11 @@ Base.metadata.create_all(bind=engine)
 
 def test_all_crud():
     db: Session = SessionLocal()
+    
+    clear_db()  # 清空数据库，确保测试环境干净
+    print("=== 已清空所有测试表，开始测试所有 CRUD 接口 ===\n")
+
     try:
-        # 清空所有测试相关表（开发阶段用，慎用生产环境）
-# 清空测试表（ORM 方式）
-        db.query(Instrument).delete()
-        db.query(MarketData).delete()
-        db.query(Plan).delete()
-        db.query(Orders).delete()
-        db.query(Position).delete()
-        db.query(Trade).delete()
-        db.query(Account).delete()
-        db.query(Log).delete()
-        db.commit()
-
-        print("=== 已清空所有测试表，开始测试所有 CRUD 接口 ===\n")
-
         # 1. Instrument
         print("测试 Instrument...")
         instr = InstrumentCRUD.create(db, exchange="BINANCE", code="BTCUSDT", month="2605", multiplier=1)

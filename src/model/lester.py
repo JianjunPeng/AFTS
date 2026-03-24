@@ -4,6 +4,8 @@ import json
 
 from ..config.config import Config
 from ..logging.logger import Logger
+from ..services.log_service import LogService
+
 from xai_sdk import Client
 from xai_sdk.chat import system, user
 
@@ -69,7 +71,7 @@ class Lester:
         content = self.scan + "So, analyze the following data:\n" + text
 
         # Require for saving the user message for debugging and traceability
-        Logger.get().info(text)
+        LogService().log(level="INFO", message="Lester Scan input", module="lester.scan")
 
         self.chat.append(user(content))
         response = self.chat.sample()
