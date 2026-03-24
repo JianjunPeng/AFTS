@@ -10,13 +10,25 @@
     "decide": "./advisor/DECIDE.md",
     "loss": "./advisor/LOSS.md"
   },
+  "tqsdk": {
+    "auth": {
+      "username": "walkercook",
+      "password": "TQ_SDK_PASSWORD",
+      "demotrading": true
+    },
+    "account": {
+      "broker": "H徽商期货",
+      "userid": "572409",
+      "password": "BROKER_PASSWORD"
+    }
+  },
   "database": {
     "type": "sqlite",
     "name": "afts.db",
     "url": "sqlite:///./data/afts.db"
   },
   "logging": {
-    "level": "INFO",
+    "level": "DEBUG",
     "file": "./logs/afts.log",
     "maxBytes": 10485760,
     "backupCount": 5
