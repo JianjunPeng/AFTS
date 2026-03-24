@@ -7,7 +7,7 @@ from ..logging  import Logger
 from xai_sdk import Client
 from xai_sdk.chat import system, user
 
-class Lester:
+class LLM:
     def __init__(self):
         config = Config.get()
 
@@ -116,6 +116,6 @@ if __name__ == "__main__":
     with open(Config.get().unittest_default, "r", encoding="utf-8") as f:
         sample_text = f.read()
 
-    lester = Lester()
-    result = lester.Scan(sample_text)
+    llm = LLM()
+    result = llm.Scan(sample_text)
     print(result)
