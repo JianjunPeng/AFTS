@@ -36,11 +36,14 @@ class Config:
             raise ValueError("advisor must be an object")
 
         base_dir = Path.cwd()
+        prompt_config = advisor_config.get("prompt") or {}
+        if not isinstance(prompt_config, dict):
+            raise ValueError("advisor.prompt must be an object")
 
         def read_prompt_file(key: str) -> str:
-            rel_path = advisor_config.get(key)
+            rel_path = prompt_config.get(key) or advisor_config.get(key)
             if not rel_path:
-                raise ValueError(f"Missing advisor configuration: {key}")
+                raise ValueError(f"Missing advisor configuration: prompt.{key}")
             full_path = (base_dir / rel_path).resolve()
             if not full_path.is_file():
                 raise FileNotFoundError(f"File not found: {full_path}")
@@ -48,9 +51,45 @@ class Config:
                 return f.read()
 
         self.advisor_system = read_prompt_file("system")
-        self.advisor_scan   = read_prompt_file("scan")
+        self.advisor_scan = read_prompt_file("scan")
         self.advisor_decide = read_prompt_file("decide")
-        self.advisor_loss   = read_prompt_file("loss")
+        self.advisor_loss = read_prompt_file("loss")
+
+        datalenth_config = advisor_config.get("datalenth") or {}
+        if not isinstance(datalenth_config, dict):
+            raise ValueError("advisor.datalenth must be an object")
+
+        self.advisor_datalenth_scan: Optional[int] = datalenth_config.get("scan")
+        self.advisor_datalenth_decide: Optional[int] = datalenth_config.get("decide")
+        self.advisor_datalenth_loss: Optional[int] = datalenth_config.get("loss")
+
+        for key, value in (
+            ("scan", self.advisor_datalenth_scan),
+            ("decide", self.advisor_datalenth_decide),
+            ("loss", self.advisor_datalenth_loss),
+        ):
+            if value is None:
+                raise ValueError(f"Missing advisor configuration: datalenth.{key}")
+            if not isinstance(value, int):
+                raise ValueError(f"advisor.datalenth.{key} must be an integer")
+            
+        duration_config = advisor_config.get("duration") or {}
+        if not isinstance(duration_config, dict):
+            raise ValueError("advisor.duration must be an object")
+
+        self.advisor_duration_scan: Optional[int] = duration_config.get("scan")
+        self.advisor_duration_decide: Optional[int] = duration_config.get("decide")
+        self.advisor_duration_loss: Optional[int] = duration_config.get("loss")
+
+        for key, value in (
+            ("scan", self.advisor_duration_scan),
+            ("decide", self.advisor_duration_decide),
+            ("loss", self.advisor_duration_loss),
+        ):
+            if value is None:
+                raise ValueError(f"Missing advisor configuration: duration.{key}")
+            if not isinstance(value, int):
+                raise ValueError(f"advisor.duration.{key} must be an integer")
 
         # Database section
         db_config = data.get("database") or {}

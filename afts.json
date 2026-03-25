@@ -5,10 +5,22 @@
     "api_key": "XAI_API_KEY"
   },
   "advisor": {
-    "system": "./advisor/prompt.md",
-    "scan": "./advisor/SCAN.md",
-    "decide": "./advisor/DECIDE.md",
-    "loss": "./advisor/LOSS.md"
+    "prompt": {
+      "system": "./advisor/SYSTEM.md",
+      "scan": "./advisor/SCAN.md",
+      "decide": "./advisor/DECIDE.md",
+      "loss": "./advisor/LOSS.md"
+    },
+    "datalenth": {
+      "scan": 256,
+      "decide": 256,
+      "loss": 360
+    },
+    "duration": {
+      "scan": 900,
+      "decide": 900,
+      "loss": 900
+    }
   },
   "tqsdk": {
     "auth": {
