@@ -96,6 +96,24 @@ def test_all_services():
         LogService.log("INFO", "Decide 开仓 BTCUSDT 2手", "lester.decide")
         print("业务日志已写入数据库\n")
 
+        # 8. PlanService
+        print("测试 PlanService...")
+        plan = PlanService.create_plan(symbol="BTCUSDT")
+        print(f"创建交易计划: {plan.symbol}")
+        
+        p = PlanService.get_plan("BTCUSDT")
+        print(f"查询计划: {p.symbol if p else 'Not found'}")
+        
+        all_plans = PlanService.get_all_plans()
+        print(f"当前计划品种数量: {len(all_plans)}")
+        
+        exists = PlanService.exists("BTCUSDT")
+        print(f"BTCUSDT 是否在计划中: {exists}")
+        
+        # 测试重复创建（不应报错）
+        PlanService.create_plan("BTCUSDT")
+        print("重复创建计划测试通过\n")
+
         print("=== 所有 Services 测试通过！===")
 
     except Exception as e:
