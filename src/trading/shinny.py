@@ -37,15 +37,15 @@ class Shinny:
         self.auth = TqAuth(config.tqsdk_auth_username, tqauth_password)
         self.backtest = None # Only used in BACKTEST mode
 
-        if self.work_mode == "DEMO":
-            self.account = TqKq()
+        if self.work_mode == "LIVE":
+            self.account = TqAccount(config.tqsdk_account_broker,
+                                    config.tqsdk_account_userid,
+                                    broker_password)
         elif self.work_mode == "BACKTEST":
             self.account = TqSim()
             self.backtest = TqBacktest(start_time="2025-01-01", end_time="2025-12-31")
         else:
-            self.account = TqAccount(config.tqsdk_account_broker,
-                                    config.tqsdk_account_userid,
-                                    broker_password)
+            self.account = TqKq()
 
         self.api = TqApi(auth=self.auth, account=self.account, backtest=self.backtest)
         logger.info(f"Shinny initialized in {self.work_mode} mode with account: {config.tqsdk_account_userid}")
@@ -72,4 +72,8 @@ class Shinny:
 if __name__ == "__main__":
     with Shinny(work_mode="DEMO") as shinny:
         kline_text = shinny.get_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
+        print(kline_text)
+        kline_text = shinny.get_kline_data(symbol="SHFE.cu2606", duration_seconds=900, data_length=12)
+        print(kline_text)
+        kline_text = shinny.get_kline_data(symbol="SHFE.ag2606", duration_seconds=900, data_length=12)
         print(kline_text)

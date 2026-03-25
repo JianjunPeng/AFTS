@@ -80,7 +80,7 @@ class Lester:
                     continue
 
                 symbol = f"{inst.exchange}.{inst.code}{inst.month}"
-                kline_data = shinny.get_kline_data(symbol)
+                kline_data = shinny.get_kline_data(symbol, self.config.advisor_duration_scan, self.config.advisor_datalenth_scan)
                 scan_result = self.llm.Scan(kline_data)
 
                 # Save the market data and scan results to the database for future analysis and traceability
