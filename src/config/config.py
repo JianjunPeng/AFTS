@@ -125,6 +125,9 @@ class Config:
         for field in ("tqsdk_account_broker", "tqsdk_account_userid", "tqsdk_account_password"):
             if not getattr(self, field):
                 raise ValueError(f"Missing required configuration items: tqsdk.account.{field.split('_')[-1]}")
+        self.work_mode: str = data.get("work_mode", "LIVE").upper()
+        if self.work_mode not in ("DEMO", "BACKTEST", "LIVE"):
+            raise ValueError("Invalid work_mode: must be one of DEMO, BACKTEST, LIVE")
 
         # Logging section
         logging_config = data.get("logging") or {}

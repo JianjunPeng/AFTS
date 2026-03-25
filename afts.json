@@ -32,7 +32,8 @@
       "broker": "H徽商期货",
       "userid": "572409",
       "password": "BROKER_PASSWORD"
-    }
+    },
+    "work_mode": "DEMO"
   },
   "database": {
     "type": "sqlite",
