@@ -1,5 +1,5 @@
 # src/services/test_services.py
-# 运行方式：python -m src.services.test_services
+# Run with: python -m src.services.test_services
 
 from src.database import clear_db
 from tablemodels  import Base

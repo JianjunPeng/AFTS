@@ -1,5 +1,5 @@
 # src/database/test_crud.py
-# 运行方式：python -m src.database.test_crud
+# Run with: python -m src.database.test_crud
 
 from datetime import datetime
 
