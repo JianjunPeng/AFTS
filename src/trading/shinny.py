@@ -71,9 +71,11 @@ class Shinny:
 
 if __name__ == "__main__":
     with Shinny(work_mode="DEMO") as shinny:
-        kline_text = shinny.get_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
-        print(kline_text)
-        kline_text = shinny.get_kline_data(symbol="SHFE.cu2606", duration_seconds=900, data_length=12)
-        print(kline_text)
-        kline_text = shinny.get_kline_data(symbol="SHFE.ag2606", duration_seconds=900, data_length=12)
+        #kline_text = shinny.get_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
+        #print(kline_text)
+        #kline_text = shinny.get_kline_data(symbol="SHFE.cu2606", duration_seconds=900, data_length=12)
+        #print(kline_text)
+        #kline_text = shinny.get_kline_data(symbol="SHFE.ag2606", duration_seconds=900, data_length=12)
+        #print(kline_text)
+        kline_text = shinny.get_kline_data(symbol="CZCE.MA606", duration_seconds=900, data_length=12)
         print(kline_text)

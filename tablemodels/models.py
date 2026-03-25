@@ -11,6 +11,8 @@ class Instrument(Base):
     code = Column(String(8), nullable=False)
     month = Column(String(8), nullable=False)
     multiplier = Column(Integer)
+    fluctuation = Column(Float)
+    marginrate = Column(Float)
     __table_args__ = (
         UniqueConstraint('exchange', 'code', 'month', name='uix_instrument_exchange_code_month'),
     )
@@ -28,6 +30,10 @@ class Plan(Base):
     __tablename__ = "plan"
     id = Column(Integer, primary_key=True, autoincrement=True)
     symbol = Column(String(16), unique=True, nullable=False, index=True)
+    upper = Column(Float)
+    lower = Column(Float)
+    uppertouches = Column(Integer)
+    lowertouches = Column(Integer)
 
 class Orders(Base):
     __tablename__ = "orders"

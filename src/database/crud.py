@@ -12,8 +12,23 @@ from tablemodels.models import (
 # ==================== Instrument ====================
 class InstrumentCRUD:
     @staticmethod
-    def create(db: Session, exchange: str, code: str, month: str, multiplier: Optional[int] = 1) -> Instrument:
-        obj = Instrument(exchange=exchange, code=code, month=month, multiplier=multiplier)
+    def create(
+        db: Session,
+        exchange: str,
+        code: str,
+        month: str,
+        multiplier: Optional[int] = 1,
+        fluctuation: Optional[float] = None,
+        marginrate: Optional[float] = None,
+    ) -> Instrument:
+        obj = Instrument(
+            exchange=exchange,
+            code=code,
+            month=month,
+            multiplier=multiplier,
+            fluctuation=fluctuation,
+            marginrate=marginrate,
+        )
         db.add(obj)
         db.commit()
         db.refresh(obj)
@@ -60,8 +75,21 @@ class MarketDataCRUD:
 # ==================== Plan ====================
 class PlanCRUD:
     @staticmethod
-    def create(db: Session, symbol: str) -> Plan:
-        obj = Plan(symbol=symbol)
+    def create(
+        db: Session,
+        symbol: str,
+        upper: Optional[float] = None,
+        lower: Optional[float] = None,
+        uppertouches: Optional[int] = None,
+        lowertouches: Optional[int] = None,
+    ) -> Plan:
+        obj = Plan(
+            symbol=symbol,
+            upper=upper,
+            lower=lower,
+            uppertouches=uppertouches,
+            lowertouches=lowertouches,
+        )
         db.add(obj)
         db.commit()
         db.refresh(obj)
@@ -76,6 +104,30 @@ class PlanCRUD:
         result = db.execute(delete(Plan).where(Plan.symbol == symbol))
         db.commit()
         return result.rowcount
+
+    @staticmethod
+    def create_or_update(
+        db: Session,
+        symbol: str,
+        upper: Optional[float] = None,
+        lower: Optional[float] = None,
+        uppertouches: Optional[int] = None,
+        lowertouches: Optional[int] = None,
+    ) -> Plan:
+        existing = db.execute(select(Plan).where(Plan.symbol == symbol)).scalar_one_or_none()
+        if existing:
+            if upper is not None:
+                existing.upper = upper
+            if lower is not None:
+                existing.lower = lower
+            if uppertouches is not None:
+                existing.uppertouches = uppertouches
+            if lowertouches is not None:
+                existing.lowertouches = lowertouches
+            db.commit()
+            db.refresh(existing)
+            return existing
+        return PlanCRUD.create(db, symbol, upper, lower, uppertouches, lowertouches)
 
 
 # ==================== Order ====================
@@ -250,4 +302,3 @@ class LogCRUD:
         return db.execute(
             select(Log).order_by(Log.timestamp.desc()).limit(limit)
         ).scalars().all()
-

@@ -12,12 +12,22 @@ class PlanService:
     """
 
     @staticmethod
-    def create_plan(symbol: str) -> Plan:
+    def create_plan(
+        symbol: str,
+        upper: Optional[float] = None,
+        lower: Optional[float] = None,
+        uppertouches: Optional[int] = None,
+        lowertouches: Optional[int] = None,
+    ) -> Plan:
         with SessionLocal() as db:
-            existing = PlanCRUD.get_by_symbol(db, symbol)
-            if existing:
-                return existing
-            return PlanCRUD.create(db, symbol)
+            return PlanCRUD.create_or_update(
+                db,
+                symbol,
+                upper=upper,
+                lower=lower,
+                uppertouches=uppertouches,
+                lowertouches=lowertouches,
+            )
 
     @staticmethod
     def get_plan(symbol: str) -> Optional[Plan]:

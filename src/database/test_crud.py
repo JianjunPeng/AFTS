@@ -16,7 +16,15 @@ def test_all_crud():
     try:
         # 1. Instrument
         print("测试 Instrument...")
-        instr = InstrumentCRUD.create(db, exchange="BINANCE", code="BTCUSDT", month="2605", multiplier=1)
+        instr = InstrumentCRUD.create(
+            db,
+            exchange="BINANCE",
+            code="BTCUSDT",
+            month="2605",
+            multiplier=1,
+            fluctuation=0.5,
+            marginrate=0.12,
+        )
         print(f"创建: {instr.exchange}/{instr.code}")
         found = InstrumentCRUD.get_by_exchange_code(db, "BINANCE", "BTCUSDT", "2605")
         print(f"查询: {found.code if found else 'Not found'}")
@@ -40,7 +48,7 @@ def test_all_crud():
 
         # 3. Plan
         print("测试 Plan...")
-        plan = PlanCRUD.create(db, symbol="BTCUSDT")
+        plan = PlanCRUD.create(db, symbol="BTCUSDT", upper=70000.0, lower=62000.0, uppertouches=1, lowertouches=0)
         print(f"创建计划: {plan.symbol}")
         p = PlanCRUD.get_by_symbol(db, "BTCUSDT")
         print(f"查询: {p.symbol if p else 'Not found'}")

@@ -13,7 +13,14 @@ def test_all_services():
     try:
         # 1. InstrumentService
         print("测试 InstrumentService...")
-        instr = InstrumentService.add_instrument("BINANCE", "BTCUSDT", "2509", 1)
+        instr = InstrumentService.add_instrument(
+            "BINANCE",
+            "BTCUSDT",
+            "2509",
+            1,
+            fluctuation=0.5,
+            marginrate=0.12,
+        )
         print(f"添加品种: {instr.exchange}/{instr.code}/{instr.month}")
         found = InstrumentService.get_instrument("BINANCE", "BTCUSDT", "2509")
         print(f"查询品种: {found.code if found else 'Not found'}")
@@ -98,7 +105,7 @@ def test_all_services():
 
         # 8. PlanService
         print("测试 PlanService...")
-        plan = PlanService.create_plan(symbol="BTCUSDT")
+        plan = PlanService.create_plan(symbol="BTCUSDT", upper=70000.0, lower=62000.0, uppertouches=1, lowertouches=0)
         print(f"创建交易计划: {plan.symbol}")
         
         p = PlanService.get_plan("BTCUSDT")

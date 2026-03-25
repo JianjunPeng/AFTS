@@ -1,3 +1,5 @@
+# src/database/makeup.py
+# Run with: python src/database/makeup.py
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -24,14 +26,14 @@ InstrumentCRUD.create(db, exchange="DCE", code="i", month="2605", multiplier=100
 InstrumentCRUD.create(db, exchange="DCE", code="eg", month="2605", multiplier=10)
 InstrumentCRUD.create(db, exchange="DCE", code="eb", month="2605", multiplier=5)
 
-InstrumentCRUD.create(db, exchange="CZCE", code="TA", month="2605", multiplier=5)
-InstrumentCRUD.create(db, exchange="CZCE", code="MA", month="2605", multiplier=10)
-InstrumentCRUD.create(db, exchange="CZCE", code="SA", month="2605", multiplier=20)
-InstrumentCRUD.create(db, exchange="CZCE", code="FG", month="2605", multiplier=20)
-InstrumentCRUD.create(db, exchange="CZCE", code="PX", month="2605", multiplier=5)
-InstrumentCRUD.create(db, exchange="CZCE", code="SH", month="2605", multiplier=30)
-InstrumentCRUD.create(db, exchange="CZCE", code="SM", month="2605", multiplier=5)
-InstrumentCRUD.create(db, exchange="CZCE", code="CF", month="2605", multiplier=5)
+InstrumentCRUD.create(db, exchange="CZCE", code="TA", month="605", multiplier=5)
+InstrumentCRUD.create(db, exchange="CZCE", code="MA", month="605", multiplier=10)
+InstrumentCRUD.create(db, exchange="CZCE", code="SA", month="605", multiplier=20)
+InstrumentCRUD.create(db, exchange="CZCE", code="FG", month="605", multiplier=20)
+InstrumentCRUD.create(db, exchange="CZCE", code="PX", month="605", multiplier=5)
+InstrumentCRUD.create(db, exchange="CZCE", code="SH", month="605", multiplier=30)
+InstrumentCRUD.create(db, exchange="CZCE", code="SM", month="605", multiplier=5)
+InstrumentCRUD.create(db, exchange="CZCE", code="CF", month="605", multiplier=5)
 
 InstrumentCRUD.create(db, exchange="GFEX", code="lc", month="2605", multiplier=1)
 InstrumentCRUD.create(db, exchange="GFEX", code="ps", month="2605", multiplier=3)
