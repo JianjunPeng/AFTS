@@ -41,13 +41,13 @@ if not api_key:
     raise ValueError("XAI_API_KEY not found in environment variables!")
 print("API Key loaded successfully:", api_key[:8], "...", api_key[-8:0])
 
-with open('./model/prompt.md', 'r', encoding='utf-8') as fs:
+with open('./advisor/SYSTEM.md', 'r', encoding='utf-8') as fs:
     system_content = fs.read()
 
-with open('./model/SCAN.md', 'r', encoding='utf-8') as fu:
+with open('./advisor/SCAN.md', 'r', encoding='utf-8') as fu:
     oper_content = fu.read()
 
-with open('./usercase/autocase/case1.md', 'r', encoding='utf-8') as ud:
+with open('./usercase/autocase/SCAN/case1.md', 'r', encoding='utf-8') as ud:
     data_content = ud.read()
 
 user_content = oper_content + "So, analyze the following data:\n" + data_content

@@ -2,7 +2,7 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import select, update, delete
-from datetime import datetime
+from datetime import datetime, timezone
 
 from tablemodels.models import (
     Instrument, MarketData, Plan, Orders, Position, Trade, Account, Log
@@ -214,7 +214,7 @@ class TradeCRUD:
         obj = Trade(
             symbol=symbol,
             status=status,
-            open_time=datetime.utcnow(),
+            open_time=datetime.now(timezone.utc),
             volume=volume,
             open_price=open_price
         )
@@ -231,7 +231,7 @@ class TradeCRUD:
             .where(Trade.id == trade_id)
             .values(
                 status=status,
-                close_time=datetime.utcnow(),
+                close_time=datetime.now(timezone.utc),
                 close_price=close_price,
                 profits=profits,
                 R=r_value
@@ -260,7 +260,7 @@ class AccountCRUD:
     def create_or_update(db: Session, account_id: str, balance: float,
                          available: float, margin: float) -> Account:
         existing = db.get(Account, account_id)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         if existing:
             existing.balance = balance
             existing.available = available

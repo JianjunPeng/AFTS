@@ -16,8 +16,8 @@ keywords = ["trading", "futures", "automation"]
 
 dependencies = [
     "tqsdk",
-    "xai-sdk"
-    "sqlalchemy"
+    "xai-sdk",
+    "sqlalchemy",
     "alembic"
 ]
 
@@ -28,6 +28,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-cov",
     "black",
     "ruff",
     "mypy",

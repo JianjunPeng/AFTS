@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 
@@ -44,7 +44,7 @@ class Orders(Base):
     volume = Column(Integer)
     risk = Column(Float)
     status = Column(String(16))
-    insert_time = Column(DateTime, default=datetime.utcnow)
+    insert_time = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Position(Base):
     __tablename__ = "position"
@@ -74,12 +74,12 @@ class Account(Base):
     balance = Column(Float)
     available = Column(Float)
     margin = Column(Float)
-    update_time = Column(DateTime, default=datetime.utcnow)
+    update_time = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Log(Base):
     __tablename__ = "log"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     level = Column(String(8))
     message = Column(Text)
     module = Column(String(32))

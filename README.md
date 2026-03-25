@@ -19,7 +19,7 @@ python -m venv .env
 source .env/bin/activate
 
 # 3. Install dependencies
-pip install tqsdk xai-sdk sqlalchemy alembic
+pip install tqsdk xai-sdk sqlalchemy alembic pytest pytest-cov
 
 # 4. Prepare API key
 Add the following line to the file .env/bin/activate: export XAI_API_KEY=xai-xxxx (enter your actual XAI API Key).
