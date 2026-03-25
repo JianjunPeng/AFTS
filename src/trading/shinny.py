@@ -54,11 +54,10 @@ class Shinny:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
-            print(f"Shinny exception: {exc_type.__name__} - {exc_val}")
+            Logger.get().error(f"Shinny exception: {exc_type.__name__} - {exc_val}")
         if self.api:
             self.api.close()
             self.api = None
-        return False
 
 
     def get_kline_data(self, symbol: str, duration_seconds: int, data_length: int) -> str:

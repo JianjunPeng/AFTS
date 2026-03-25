@@ -71,6 +71,25 @@ class Logger:
     def critical(self, msg, *args, **kwargs):
         self.logger.critical(msg, *args, **kwargs)
 
+    def log(self, level: str, message: str):
+        """
+        level: INFO / WARNING / ERROR / CRITICAL
+        message: Event description
+        """
+        level = level.upper()
+        if level not in ["INFO", "WARNING", "ERROR", "CRITICAL"]:
+            level = "INFO"
+        match level:
+            case "DEBUG":
+                self.debug(message)
+            case "INFO":
+                self.info(message)
+            case "WARNING":
+                self.warning(message)
+            case "ERROR":
+                self.error(message)
+            case "CRITICAL":
+                self.critical(message)
 
     @classmethod
     def get(cls):

@@ -6,6 +6,7 @@ from .order_service import OrderService
 from .instrument_service import InstrumentService
 from .market_data_service import MarketDataService
 from .account_service import AccountService
+from .plan_service import PlanService
 
 __all__ = [
     "LogService",
@@ -15,4 +16,5 @@ __all__ = [
     "InstrumentService",
     "MarketDataService",
     "AccountService",
+    "PlanService",
 ]
