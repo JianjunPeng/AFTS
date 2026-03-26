@@ -53,7 +53,6 @@ class Lester:
     def log_data(self, symbol: str, category: str, data: str, conclusion: str = ""):
         """Record market data to the database"""
         self.market_data_service.save_market_data(symbol=symbol, category=category, ohlc_text=data, conclusion=conclusion)
-        self.logger.info(f"[Lester] Market data: {symbol} - {category} - {conclusion}")
 
     # ==================== 后续会实现的业务方法 ====================
     # 这些方法是交易系统的核心业务逻辑，目前先定义接口，后续会逐步实现具体逻辑。
@@ -80,6 +79,7 @@ class Lester:
                     self.log_business(level="WARNING", message=f"Skipping instrument with invalid symbol: {inst}", module=module_str)
                     continue
 
+                self.log_business(message=f"Fetch data of symbol: {symbol}", module=module_str)
                 kline_data = shinny.get_kline_data(symbol, self.config.advisor_duration_scan, self.config.advisor_datalenth_scan)
                 scan_result = self.llm.Scan(kline_data)
 
@@ -89,8 +89,12 @@ class Lester:
                 self.log_business(message=f"Market data saved: {symbol} - {result_str}", module=module_str)
 
                 # If LLM indicates a trading opportunity, create a trading plan and log the event
-                if scan_result and scan_result.get("hasRange") == True:
-                    self.plan_service.create_plan(symbol=symbol)
+                if scan_result and scan_result.get("isConsolidation") == True:
+                    self.plan_service.create_plan(symbol=symbol, 
+                                                  upper=scan_result.get("upperPrice"), 
+                                                  lower=scan_result.get("lowerPrice"), 
+                                                  uppertouches=scan_result.get("upperTouches"), 
+                                                  lowertouches=scan_result.get("lowerTouches"))
                     self.log_business(level="CRITICAL", message=f"Trading plan created: {symbol}", module=module_str)
                     newplans.append(symbol)
 

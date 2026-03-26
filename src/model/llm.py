@@ -79,11 +79,13 @@ class LLM:
 
         # Make sure to return a fixed structure (even if the model output is incorrect, fill in default values)
         return {
-            "hasRange": result.get("hasRange", False),
-            "upper": result.get("upper", "0"),
-            "lower": result.get("lower", "0"),
-            "count": result.get("count", 0),
-            "type": result.get("type", "none")
+            "isConsolidation": result.get("isConsolidation", False),
+            "upperPrice": result.get("upperPrice", 0),
+            "lowerPrice": result.get("lowerPrice", 0),
+            "upperTouches": result.get("upperTouches", 0),
+            "lowerTouches": result.get("lowerTouches", 0),
+            "candlesticks": result.get("candlesticks", 0),
+            "consolidationType": result.get("consolidationType", "none")
         }
 
 

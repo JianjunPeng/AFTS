@@ -69,7 +69,7 @@ class Shinny:
         if len(symbollist) > 0:
             symbol = symbollist[0]
         else:
-            Logger.get().error(f"Shinny get_symbol: {exchange}.{code}, no symbol found in query_cont_quotes!")
+            Logger.get().error(f"[Shinny] get_symbol: {exchange}.{code}, no symbol found in query_cont_quotes!")
         return symbol
     
 
