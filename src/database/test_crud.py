@@ -22,22 +22,14 @@ def test_all_crud():
         instr = InstrumentCRUD.create(
             db,
             exchange="BINANCE",
-            code="BTCUSDT",
-            month="2605",
-            multiplier=1,
-            fluctuation=0.5,
-            marginrate=0.12,
+            code="BTCUSDT"
         )
         print(f"创建: {instr.exchange}/{instr.code}")
-        found = InstrumentCRUD.get_by_exchange_code(db, "BINANCE", "BTCUSDT", "2605")
+        found = InstrumentCRUD.get_by_exchange_code(db, "BINANCE", "BTCUSDT")
         print(f"查询: {found.code if found else 'Not found'}")
         assert found is not None 
         assert found.exchange == "BINANCE"
         assert found.code == "BTCUSDT"
-        assert found.month == "2605"
-        assert found.multiplier == 1
-        assert found.fluctuation == 0.5
-        assert found.marginrate == 0.12
         all_instr = InstrumentCRUD.get_all(db)
         print(f"总数: {len(all_instr)}\n")
         assert len(all_instr) == 1

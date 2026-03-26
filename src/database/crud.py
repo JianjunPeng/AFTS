@@ -15,19 +15,11 @@ class InstrumentCRUD:
     def create(
         db: Session,
         exchange: str,
-        code: str,
-        month: str,
-        multiplier: Optional[int] = 1,
-        fluctuation: Optional[float] = None,
-        marginrate: Optional[float] = None,
+        code: str
     ) -> Instrument:
         obj = Instrument(
             exchange=exchange,
-            code=code,
-            month=month,
-            multiplier=multiplier,
-            fluctuation=fluctuation,
-            marginrate=marginrate,
+            code=code
         )
         db.add(obj)
         db.commit()
@@ -35,9 +27,9 @@ class InstrumentCRUD:
         return obj
 
     @staticmethod
-    def get_by_exchange_code(db: Session, exchange: str, code: str, month: str) -> Optional[Instrument]:
+    def get_by_exchange_code(db: Session, exchange: str, code: str) -> Optional[Instrument]:
         return db.execute(
-            select(Instrument).where(Instrument.exchange == exchange, Instrument.code == code, Instrument.month == month)
+            select(Instrument).where(Instrument.exchange == exchange, Instrument.code == code)
         ).scalar_one_or_none()
 
     @staticmethod

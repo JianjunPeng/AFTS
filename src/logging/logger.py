@@ -2,7 +2,7 @@ import logging
 
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from ..config.config import Config
+from ..config import Config
 
 class Logger:
     _instance = None
@@ -47,10 +47,11 @@ class Logger:
             file_handler.setLevel(level_map.get(config.log_level, logging.INFO))
             file_handler.setFormatter(
                 logging.Formatter(
-                    '%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s'
+                    '%(asctime)s [%(levelname)s] %(message)s'
                 )
             )
             self.logger.addHandler(file_handler)
+            self.logger.critical("\n\n\n\n\n\n\n\n")
 
     # Methods to log at different levels
     def debug(self, msg, *args, **kwargs):

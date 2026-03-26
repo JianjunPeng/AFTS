@@ -47,13 +47,13 @@ class Lester:
     def log_business(self, level: str = "INFO", message: str = "", module: str = "trading.lester"):
         """Record business events to the database"""
         self.log_service.log(level=level, message=message, module=module)
-        self.logger.log(level, f"Business log recorded: {message} (module: {module})")
+        self.logger.log(level, f"[Lester] Business log: {message} (module: {module})")
 
 
     def log_data(self, symbol: str, category: str, data: str, conclusion: str = ""):
         """Record market data to the database"""
         self.market_data_service.save_market_data(symbol=symbol, category=category, ohlc_text=data, conclusion=conclusion)
-        self.logger.info(f"Market data saved: {symbol} - {category} - {conclusion}")
+        self.logger.info(f"[Lester] Market data: {symbol} - {category} - {conclusion}")
 
     # ==================== 后续会实现的业务方法 ====================
     # 这些方法是交易系统的核心业务逻辑，目前先定义接口，后续会逐步实现具体逻辑。
@@ -75,11 +75,11 @@ class Lester:
         
         with Shinny(work_mode=self.config.work_mode) as shinny:
             for inst in instruments:
-                if inst.exchange == "" or inst.code == "" or inst.month == "":
-                    self.log_business(level="WARNING", message=f"Skipping invalid instrument with missing fields: {inst}", module=module_str)
+                symbol = shinny.get_symbol(exchange=inst.exchange, code=inst.code)
+                if not symbol:
+                    self.log_business(level="WARNING", message=f"Skipping instrument with invalid symbol: {inst}", module=module_str)
                     continue
 
-                symbol = f"{inst.exchange}.{inst.code}{inst.month}"
                 kline_data = shinny.get_kline_data(symbol, self.config.advisor_duration_scan, self.config.advisor_datalenth_scan)
                 scan_result = self.llm.Scan(kline_data)
 

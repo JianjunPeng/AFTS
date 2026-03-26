@@ -10,27 +10,19 @@ class InstrumentService:
     @staticmethod
     def add_instrument(
         exchange: str,
-        code: str,
-        month: str,
-        multiplier: Optional[int] = 1,
-        fluctuation: Optional[float] = None,
-        marginrate: Optional[float] = None,
+        code: str
     ) -> Instrument:
         with SessionLocal() as db:
             return InstrumentCRUD.create(
                 db,
                 exchange,
-                code,
-                month,
-                multiplier,
-                fluctuation,
-                marginrate,
+                code
             )
 
     @staticmethod
-    def get_instrument(exchange: str, code: str, month: str) -> Optional[Instrument]:
+    def get_instrument(exchange: str, code: str) -> Optional[Instrument]:
         with SessionLocal() as db:
-            return InstrumentCRUD.get_by_exchange_code(db, exchange, code, month)
+            return InstrumentCRUD.get_by_exchange_code(db, exchange, code)
 
     @staticmethod
     def get_all_instruments() -> List[Instrument]:

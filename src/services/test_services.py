@@ -18,23 +18,15 @@ def test_all_services():
         print("测试 InstrumentService...")
         instr = InstrumentService.add_instrument(
             "BINANCE",
-            "BTCUSDT",
-            "2509",
-            1,
-            fluctuation=0.5,
-            marginrate=0.12,
+            "BTCUSDT"
         )
-        print(f"添加品种: {instr.exchange}/{instr.code}/{instr.month}")
-        found = InstrumentService.get_instrument("BINANCE", "BTCUSDT", "2509")
+        print(f"添加品种: {instr.exchange}/{instr.code}")
+        found = InstrumentService.get_instrument("BINANCE", "BTCUSDT")
         print(f"查询品种: {found.code if found else 'Not found'}")
         print(f"品种总数: {len(InstrumentService.get_all_instruments())}\n")
         assert found is not None
         assert found.exchange == "BINANCE"
         assert found.code == "BTCUSDT"
-        assert found.month == "2509"
-        assert found.multiplier == 1
-        assert found.fluctuation == 0.5
-        assert found.marginrate == 0.12
 
         # 2. MarketDataService
         print("测试 MarketDataService...")
