@@ -1,34 +1,30 @@
 ---
-name: scan_consolidation
+name: Consolidation Scan
 description: |
-  Scan the tail end of price action (most recent candlesticks) to determine whether the latest price movement is currently trading within a valid sideways consolidation range. 
-  If detected, return the narrow upper/lower boundaries, touch counts, duration in candlesticks, and consolidation type.
+  Determine whether the tail end of the provided OHLC data is currently trading within a valid sideways consolidation range.
+  If yes, identify the narrow upper/lower boundaries, touch counts, duration, and consolidation type.
+  Strictly follow all rules. Output only JSON.
 ---
 
-# Scan Consolidation Range
-
-Scan the tail segment of OHLC candlestick data to detect whether the most recent price action is trapped in a **sideways consolidation range** (price oscillating like a smoothed sine wave between two essentially horizontal narrow bands).
-
-If a valid range exists, identify its upper and lower boundary prices, count valid touches on each boundary, and classify the consolidation type.
+# Consolidation Scan
+Analyze only the tail segment of the provided OHLC candlestick data for this single instrument to detect whether the most recent price action is trapped in a **valid sideways consolidation range**.
 
 ## Goal
-1. Determine whether the tail end is currently inside a valid sideways consolidation range (`isConsolidation`).
-2. Identify the representative upperPrice and lowerPrice of the narrow horizontal boundaries.
-3. Count the number of valid touches on the upper and lower boundaries respectively.
-4. Return the length of the consolidation (candlesticks) and its type.
+1. Decide `isConsolidation`: true **only** if ALL rules 1-5 below are strictly satisfied.
+2. If true, identify representative upperPrice and lowerPrice of the narrow horizontal boundaries.
+3. Count valid touches on upper and lower boundaries.
+4. Return length in candlesticks and consolidationType.
 
 ## Input
-Four comma-separated lines of OHLC prices for a single asset:
-
+Four comma-separated lines (oldest left → newest right):
 - Line 1: Open prices
 - Line 2: High prices
 - Line 3: Low prices
 - Line 4: Close prices
-
-Columns run from left (oldest) to right (newest). The rightmost column is the **latest candlestick (tail end)**.
-The scan **must start from this latest candlestick and extend backwards continuously** — no sliding window allowed.
+Rightmost column is the latest candlestick. Analysis starts from the latest candle and extends backwards continuously.
 
 ## Output
+Always respond with **valid JSON only**:
 ```json
 {
   "isConsolidation": true,
@@ -40,49 +36,35 @@ The scan **must start from this latest candlestick and extend backwards continuo
   "consolidationType": "bull"
 }
 ```
+When `isConsolidation` is false: set upperPrice=0, lowerPrice=0, upperTouches=0, lowerTouches=0, candlesticks=0, consolidationType="none".
 
-**Field explanations:**
-- `isConsolidation`: `true` if the tail end is inside a valid consolidation range, otherwise `false`.
-- `upperPrice`: Representative price of the upper narrow boundary.
-- `lowerPrice`: Representative price of the lower narrow boundary.
-- `upperTouches`: Number of valid touches on the upper boundary.
-- `lowerTouches`: Number of valid touches on the lower boundary.
-- `candlesticks`: Number of consecutive candlesticks in the range (≥ 90 required).
-- `consolidationType`:
-  - `"bull"` — upperTouches ≥ 3 and lowerTouches < 3
-  - `"bear"` — lowerTouches ≥ 3 and upperTouches < 3
-  - `"hybrid"` — upperTouches ≥ 3 and lowerTouches ≥ 3
-  - `"none"` — when `isConsolidation` is `false`
-
-When `isConsolidation` is `false`, set `upperPrice`/`lowerPrice`, all touches and `candlesticks` to `0`, and `consolidationType` to `"none"`.
-
-## Rules
-
+## Strict Rules (ALL must be true, otherwise isConsolidation=false)
 1. **Tail-End Constraint**
-   The range must include the most recent candlestick and extend backwards continuously. If the latest segment shows a clear directional breakout (>2.5% move), return `isConsolidation: false`.
+   The range must include the most recent candlestick. If the latest segment shows a clear directional move >2.5% away from the potential range, return false.
 
 2. **Range Width**
-   `(upperPrice - lowerPrice) / mid_price ≤ 2.5%`, where `mid_price = (upperPrice + lowerPrice) / 2`.
+   `(upperPrice - lowerPrice) / mid_price ≤ 0.025`, where `mid_price = (upperPrice + lowerPrice) / 2`.
 
-3. **Minimum Duration**
-   The range must contain **at least 90** candlesticks.
+3. **Minimum Duration** (Core Condition)
+   The consolidation must contain **at least 90 consecutive candlesticks**. This is mandatory.
 
-4. **Boundary Definition (Narrow Band)**
-   Each boundary is a narrow price band. The width of any narrow band must not exceed 0.2% of its own mid-value. Boundaries should appear essentially horizontal.
+4. **Boundary Definition**
+   Each boundary is a narrow horizontal band. The width of any single boundary band must not exceed 0.2% of its own mid-value. Boundaries must appear essentially flat (horizontal).
 
-5. **Touch Definition**
-   - Prefer High for upper boundary touches and Low for lower boundary touches.
-   - If High exceeds the upper band or Low exceeds the lower band, fall back to Close price (±0.2% tolerance).
-   - Only **one single candlestick** per touch event may have its wick (High/Low) protruding beyond the band; its Close must remain within tolerance.
-   - Consecutive touches on the **same** boundary must be separated by **at least 10 candlesticks**; otherwise they count as one touch. Upper and lower touches are counted independently.
+5. **Touch Definition (execute strictly in this order)**
+   a. Upper touch: prefer the candle's **High**.
+   b. Lower touch: prefer the candle's **Low**.
+   c. If the wick exceeds the band but **Close** is within ±0.2% tolerance of the band, still count as valid touch. Only one candle per touch event may have protruding wick.
+   d. Consecutive touches on the **same** boundary must be separated by **at least 10 candlesticks**; if closer, count as one single touch. Upper and lower are counted independently.
+   e. One candle can contribute at most 1 touch (upper or lower).
 
 6. **Consolidation Type**
-   - `"bull"`: upperTouches ≥ 3 and lowerTouches < 3
-   - `"bear"`: lowerTouches ≥ 3 and upperTouches < 3
-   - `"hybrid"`: upperTouches ≥ 3 **and** lowerTouches ≥ 3
+   - "bull"   : upperTouches ≥ 3 AND lowerTouches < 3
+   - "bear"   : lowerTouches ≥ 3 AND upperTouches < 3
+   - "hybrid" : upperTouches ≥ 3 AND lowerTouches ≥ 3
+   - "none"   : when isConsolidation = false
 
 ## Examples
-
 ### Example 1: Valid Hybrid Consolidation (217 candlesticks total)
 763.5,764.5,764.5,763.5,764.5,763.5,763.0,764.0,764.5,765.5,766.0,765.5,766.0,766.0,764.5,764.0,764.5,763.5,764.0,764.0,764.5,764.5,765.5,765.5,764.0,763.0,762.5,762.5,766.0,765.0,766.5,766.0,765.5,765.5,766.0,765.5,764.5,764.0,764.0,762.5,763.0,760.5,760.5,761.0,762.0,764.5,761.0,760.5,759.5,759.0,754.0,755.0,754.5,754.0,754.5,754.5,754.0,752.5,752.0,753.0,753.0,750.5,751.5,750.0,743.0,741.5,740.0,738.5,737.5,739.0,742.5,744.5,744.5,744.0,742.0,743.0,742.0,739.0,739.5,741.5,744.0,743.5,742.5,741.5,741.5,742.5,742.5,742.5,740.5,742.0,744.5,746.0,748.0,747.0,752.5,752.0,752.5,756.0,754.0,752.0,752.0,753.5,755.0,751.5,750.5,750.5,749.0,748.5,748.5,748.0,748.0,749.0,749.5,750.0,749.5,750.0,746.0,745.0,745.5,747.0,746.5,746.0,745.5,747.5,749.5,748.0,748.5,748.5,748.5,748.5,748.5,748.5,748.5,748.5,747.5,747.5,747.0,748.5,750.5,747.5,747.0,747.5,747.5,749.0,747.5,747.5,746.5,748.5,750.0,752.0,751.0,749.5,746.0,748.0,747.0,745.0,751.0,744.5,747.5,747.5,747.5,744.5,746.0,747.5,749.0,750.0,751.5,750.5,752.0,752.5,752.0,751.5,749.5,748.5,749.0,749.0,748.0,748.5,749.5,748.5,750.0,753.5,752.0,748.0,750.0,748.0,750.5,750.5,749.5,749.0,747.0,745.0,748.0,749.0,753.0,748.5,747.5,749.0,750.0,747.5,747.5,748.0,746.5,751.5,749.0,748.5,747.0,751.5,750.5,750.0,751.0,750.5,752.5,751.0,752.0,752.0,751.0
 765.0,765.0,764.5,764.5,765.0,764.5,764.5,766.5,766.5,766.0,766.5,767.0,767.5,766.0,766.0,765.0,764.5,763.5,765.5,765.0,765.5,765.5,766.0,765.5,764.5,763.5,764.0,766.0,766.0,766.5,767.0,766.5,766.0,766.0,766.0,766.0,764.5,764.5,764.5,764.0,763.5,762.0,761.5,762.0,764.5,764.5,761.5,760.5,760.5,759.0,755.5,755.5,755.5,755.0,755.0,754.5,754.0,753.0,753.5,753.0,753.0,751.5,751.5,750.0,748.5,743.5,740.5,739.0,739.0,743.0,745.5,745.5,746.0,744.0,743.0,743.5,742.5,740.0,741.5,745.0,744.5,744.0,743.0,742.0,742.5,742.5,743.0,742.5,742.5,744.5,747.5,748.5,748.0,753.0,753.0,754.5,757.0,756.5,754.5,752.5,753.5,754.0,755.0,752.0,751.0,750.5,750.0,749.0,749.0,749.0,750.5,750.5,750.0,750.0,750.5,750.0,747.0,746.0,747.5,747.0,747.0,746.0,747.5,749.5,751.0,749.5,749.5,749.0,749.0,749.0,749.0,749.0,749.5,750.5,748.0,748.0,748.5,751.0,751.0,748.5,748.5,748.0,749.5,749.5,748.0,747.5,748.5,751.5,752.0,752.0,751.0,749.5,748.0,748.5,747.0,746.0,753.0,748.0,748.0,748.0,748.5,747.0,748.0,749.5,750.0,751.5,751.5,752.0,753.0,754.0,755.0,754.0,751.0,750.0,750.0,749.5,748.5,750.0,749.5,751.0,753.5,753.5,753.0,750.0,750.0,752.0,751.5,751.0,750.0,750.0,747.5,748.5,749.0,753.5,753.0,749.0,749.5,750.5,750.5,748.0,748.5,749.0,752.0,753.0,750.5,748.5,751.5,751.5,751.5,751.0,752.0,753.0,752.5,752.5,752.0,753.0,752.5
@@ -121,5 +103,6 @@ When `isConsolidation` is `false`, set `upperPrice`/`lowerPrice`, all touches an
 }
 ```
 
-
+**Final Instruction for Arthur:**
+This is the **Consolidation Scan** SKILL. Follow the SYSTEM prompt strictly. Analyze only the single instrument's DATA provided. Output **only** the JSON result. Do not add any explanation, reasoning, or extra text unless the user explicitly asks.
 
