@@ -1,6 +1,6 @@
 ---
 name: Consolidation Scan
-version: 1.3
+version: 1.5
 description: |
   Determine whether the tail end of the provided OHLC data is currently trading within a valid sideways consolidation range.
   If yes, identify the narrow upper/lower boundaries, touch counts, duration, and consolidation type.
@@ -11,7 +11,7 @@ description: |
 Analyze only the tail segment of the provided OHLC candlestick data for this single instrument to detect whether the most recent price action is trapped in a **valid sideways consolidation range**.
 
 ## Goal
-1. Decide `isConsolidation`: true **only** if ALL rules and the Analysis Procedure are strictly satisfied.
+1. Decide `isConsolidation`: true **only** if the Analysis Procedure and Strict Rules 1-4 are strictly satisfied.
 2. If true, identify representative upperPrice and lowerPrice of the narrow horizontal boundaries.
 3. Count valid touches on upper and lower boundaries.
 4. Return length in candlesticks and consolidationType.
@@ -26,7 +26,7 @@ A single JSON object with four arrays (oldest left → newest right):
   "close": [1013.86, 1012.02, ...]
 }
 ```
-Rightmost column = latest candlestick. Analysis starts from the latest candle and extends backwards continuously.
+Rightmost value in each array = latest candlestick.
 
 ## Output
 Always respond with **valid JSON only**:
@@ -44,81 +44,81 @@ Always respond with **valid JSON only**:
 When `isConsolidation` is false: set upperPrice=0, lowerPrice=0, upperTouches=0, lowerTouches=0, candlesticks=0, consolidationType="none".
 
 ## Analysis Procedure
-**Step 1: Minimum Window Check (Mandatory Gate)**
-Start from the latest candlestick (rightmost column).
-Take the most recent **exactly 90 candlesticks**.
-Check whether these 90 candles strictly satisfy ALL Strict Rules 1-5 below.
-- If they do NOT form a valid consolidation → immediately set `isConsolidation=false`, stop all analysis, and output the false JSON.
+**Step 1: Minimum Window Check (Mandatory Gate)**  
+Start from the latest candlestick (rightmost column).  
+Take the most recent **exactly 80 candlesticks**.  
+Check whether these 80 candles strictly satisfy ALL Strict Rules 1-4 below.  
+- If they do NOT form a valid consolidation → immediately set `isConsolidation=false`, stop all analysis, and output the false JSON.  
 - If they DO form a valid consolidation → record this as the current valid range, then proceed to Step 2.
 
-**Step 2: Backward Expansion (one candle at a time)**
-Extend the window backwards **exactly 1 candlestick at a time**.
-For each new larger window (91, 92, ..., up to 256):
-- Re-evaluate **ALL** Strict Rules 1-5 on the new entire window.
-- If the new window still fully satisfies every rule (especially Range Width ≤ 0.025 and boundary flatness), update the current valid range to this larger window.
+**Step 2: Backward Expansion (8 candles at a time)**  
+Extend the window backwards **in steps of exactly 8 candlesticks**.  
+For each new larger window (88, 96, ..., up to 256):  
+- Re-evaluate **ALL** Strict Rules 1-4 on the new entire window.  
+- If the new window still fully satisfies every rule (especially Range Width ≤ 0.025 and boundary flatness), update the current valid range to this larger window.  
 - If the new window violates any rule, immediately stop expansion and keep the previous (largest) valid range.
 
-**Step 3: Termination Conditions**
-Stop the expansion when any of the following occurs:
-a) Adding one more candle causes any rule to be violated, or
+**Step 3: Termination Conditions**  
+Stop the expansion when any of the following occurs:  
+a) Adding 8 more candles causes any rule (1-4) to be violated, or  
 b) The window reaches the hard maximum of **256 candlesticks**.
 
-**Step 4: Final Decision**
-- If at least one valid range (≥90 candlesticks) was found → set `isConsolidation=true` and use the **largest** valid continuous range found for upperPrice, lowerPrice, touches, candlesticks count, and consolidationType.
-- Otherwise → set `isConsolidation=false`, all numeric fields=0, `consolidationType="none"`.
+**Step 4: Final Decision**  
+- If at least one valid range (≥80 candlesticks) was found → set `isConsolidation=true` and use the **largest** valid continuous range found for upperPrice, lowerPrice, and candlesticks count.  
+- Otherwise → set `isConsolidation=false`, all numeric fields=0, `consolidationType="none"`.  
+- **Only if `isConsolidation=true`** → proceed to calculate touches and consolidationType using the Touch Calculation section below.
 
-**Guardrails**
-- Never skip Step 1 — the most recent 90 candles are the mandatory first check.
-- Expansion must be strictly continuous; no gaps or skipping candles allowed.
-- Do not average or invent boundary prices — they must be derived directly from the actual touches in the final window.
-- Do not perform a single full scan of 256 candles first. Always start from the 90-candle gate and expand sequentially.
+**Guardrails**  
+- Never skip Step 1 — the most recent 80 candles are the mandatory first check.  
+- Expansion must be strictly continuous; no gaps or skipping candles allowed.  
+- Do not average or invent boundary prices — they must be derived directly from the actual touches in the final window.  
+- Do not perform a single full scan of 256 candles first. Always start from the 80-candle gate and expand in steps of 8.
 
-## Strict Rules (ALL must be true, otherwise isConsolidation=false)
-1. **Tail-End Constraint**
+## Strict Rules (Rules 1-4 must ALL be true during Analysis Procedure, otherwise isConsolidation=false)
+1. **Tail-End Constraint**  
    The range must include the most recent candlestick. If the latest segment shows a clear directional move >2.5% away from the potential range, return false.
 
-2. **Range Width**
+2. **Range Width**  
    `(upperPrice - lowerPrice) / mid_price ≤ 0.025`, where `mid_price = (upperPrice + lowerPrice) / 2`.
 
-3. **Minimum Duration (Core Condition)**
-   The consolidation must contain **at least 90 consecutive candlesticks**. This is mandatory.
+3. **Minimum Duration (Core Condition)**  
+   The consolidation must contain **at least 80 consecutive candlesticks**. This is mandatory.
 
-4. **Boundary Definition**
+4. **Boundary Definition**  
    Each boundary is a narrow horizontal band. The width of any single boundary band must not exceed 0.2% of its own mid-value. Boundaries must appear essentially flat (horizontal).
 
-5. **Touch Definition (execute strictly in this order — three-step process)**
+## Touch Calculation (only executed if isConsolidation=true after Step 4)
+5. **Touch Definition (execute strictly in this order — three-step process)**  
    Valid touches are identified through the following mandatory three-step process on the final valid window:
 
-   a. **Step 1: Generate Candidate Touches**
-      Scan every candlestick in the final window.
-      Each individual candle that satisfies the price proximity condition is a separate **candidate touch**:
-      - Upper boundary (resistance): candle High deviates ≤ 0.2% from upperPrice.
-      - Lower boundary (support): candle Low deviates ≤ 0.2% from lowerPrice.
-      (If wick exceeds but Close is within ±0.2% tolerance, still count as valid.)
+   a. **Step 1: Generate Candidate Touches**  
+      Scan every candlestick in the final window.  
+      Each individual candle that satisfies the price proximity condition is a separate **candidate touch**:  
+      - Upper boundary (resistance): candle High deviates ≤ 0.2% from upperPrice **OR** Max(Open, Close) is within ±0.2% tolerance.  
+      - Lower boundary (support): candle Low deviates ≤ 0.2% from lowerPrice **OR** Min(Open, Close) is within ±0.2% tolerance.
 
-   b. **Step 2: Merge by Time Interval**
-      Process candidates in chronological order.
-      Merge any two adjacent candidates into a single Touch event if the interval is insufficient:
-      - Let right_A = rightmost candle index of the earlier candidate.
-      - Let left_B = leftmost candle index of the later candidate.
+   b. **Step 2: Merge by Time Interval**  
+      Process candidates in chronological order.  
+      Merge any two adjacent candidates into a single Touch event if the interval is insufficient:  
+      - Let right_A = rightmost candle index of the earlier candidate.  
+      - Let left_B = leftmost candle index of the later candidate.  
       - If `left_B - right_A - 1 < 10` (i.e., left_B < right_A + 11), merge them into one Touch event.
 
-   c. **Step 3: Merge by Price Deviation (Away-and-Return Condition)**
-      Only apply to pairs that survived Step 2 and where ≥2 Touch events remain.
-      For each pair of adjacent Touch events:
-      - right_A = rightmost candle index of the earlier Touch.
-      - left_B = leftmost candle index of the later Touch.
-      - Check the middle segment: all candles from index [right_A + 2] to [left_B - 2].
-      - This middle segment is guaranteed to be non-empty (because Step 2 already enforces ≥10 candles between right_A and left_B).
-      - At least one candle in this middle segment must show clear deviation ≥1.2% from the boundary:
-        • For upper (resistance) Touch: exists Close ≤ upperPrice × (1 - 0.012)
-        • For lower (support) Touch: exists Close ≥ lowerPrice × (1 + 0.012)
+   c. **Step 3: Merge by Price Deviation (Away-and-Return Condition)**  
+      Only apply to pairs that survived Step 2 and where ≥2 Touch events remain.  
+      For each pair of adjacent Touch events:  
+      - right_A = rightmost candle index of the earlier Touch.  
+      - left_B = leftmost candle index of the later Touch.  
+      - Check the middle segment: all candles from index [right_A + 2] to [left_B - 2].  
+      - At least one candle in this middle segment must show clear deviation ≥1.2% from the boundary **using body extreme**:  
+        • For upper (resistance) Touch: exists Min(Open, Close) ≤ upperPrice × (1 - 0.012)  
+        • For lower (support) Touch: exists Max(Open, Close) ≥ lowerPrice × (1 + 0.012)  
       - If the middle segment does **not** contain at least one such deviating candle, the later Touch is invalid and must be merged into the earlier Touch (count as one).
 
-6. **Consolidation Type**
-   - "bull"   : upperTouches ≥ 3 AND lowerTouches < 3
-   - "bear"   : lowerTouches ≥ 3 AND upperTouches < 3
-   - "hybrid" : upperTouches ≥ 3 AND lowerTouches ≥ 3
+6. **Consolidation Type** (require only 2 touches)  
+   - "bull"   : upperTouches ≥ 2 AND lowerTouches < 2  
+   - "bear"   : lowerTouches ≥ 2 AND upperTouches < 2  
+   - "hybrid" : upperTouches ≥ 2 AND lowerTouches ≥ 2  
    - "none"   : when isConsolidation = false
 
 ## Examples
@@ -168,8 +168,7 @@ b) The window reaches the hard maximum of **256 candlesticks**.
 
 **Final Instruction for Arthur:**
 This is the **Consolidation Scan** SKILL. Follow the SYSTEM prompt and the Analysis Procedure strictly. 
-Start with exactly 90 candles as the gate, then expand one by one up to 256 maximum. 
-Use the three-step Touch Definition exactly as written. Output **only** the JSON result. Do not add any explanation, reasoning, or extra text unless the user explicitly asks.
-
+Start with exactly 80 candles as the gate, then expand in steps of 8 up to 256 maximum. 
+Only if isConsolidation=true after Step 4, run the Touch Calculation. Output **only** the JSON result. Do not add any explanation, reasoning, or extra text unless the user explicitly asks.
 
 
