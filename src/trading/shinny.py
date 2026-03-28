@@ -1,11 +1,15 @@
 # src/trading/shinny.py
 # Run with: python src/trading/shinny.py
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+import json
 import pandas as pd
+from datetime import date, datetime
 from tqsdk import TqApi, TqAccount, TqAuth, TqKq, TqSim, TqBacktest
+from tqsdk.tools import DataDownloader
 from src.config  import Config
 from src.logging import Logger
 
@@ -97,27 +101,52 @@ class Shinny:
 
         klines = self.api.get_kline_serial(symbol=symbol, duration_seconds=duration_seconds, data_length=data_length)
         df = klines[["open", 'high', 'low', "close"]].copy()
-        df_transposed = df.T
+        #df = df.T
+        data_dict = df.to_dict(orient='list')
+        json_str = json.dumps(data_dict, separators=(', ', ': '))
+        json_str = json_str.replace('{\"', '```json\n{\n    \"')
+        json_str = json_str.replace(']}', ']\n}\n```')
+        json_str = json_str.replace('],\"', '],\n    \"')
+        return json_str
+    
+    def save_kline_data(self, symbol: str, duration_seconds: int, data_length: int, transpose: bool = False):
+        price_precision = self.get_price_precision(symbol)
+        float_format = f"%.{price_precision}f"
 
-        text_content = df_transposed.to_csv(sep=",", header=False, index=False, float_format=float_format)
-        return text_content
+        klines = self.api.get_kline_serial(symbol=symbol, duration_seconds=duration_seconds, data_length=data_length)
+        df = klines[["open", 'high', 'low', "close"]].copy()
+        if transpose:
+            print(f"[Shinny] Transposing K-line data for symbol: {symbol}")
+            df = df.T
+
+        df.to_csv(symbol+".csv", sep=", ", header=False, index=False, float_format=float_format)
+
+
+    def download_kline_data(self, symbol: str, start: datetime, end: datetime):
+        td = DataDownloader(self.api, symbol, dur_sec=900, start_dt=start, end_dt=end, csv_file_name=symbol + ".csv")
+        while not td.is_finished():
+            self.api.wait_update()
+            logger.info(f"[Shinny] Download progress: {td.get_progress():.2f}%")
 
 
 if __name__ == "__main__":
     with Shinny(work_mode="DEMO") as shinny:
-        #kline_text = shinny.get_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
-        #print(kline_text)
+        kline_text = shinny.get_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
+        print(kline_text)
         #kline_text = shinny.get_kline_data(symbol="SHFE.cu2606", duration_seconds=900, data_length=12)
         #print(kline_text)
         #kline_text = shinny.get_kline_data(symbol="SHFE.ag2606", duration_seconds=900, data_length=12)
         #print(kline_text)
 
-        symbol1 = shinny.get_symbol(exchange="SHFE", code="ag")
-        print(symbol1)
-        symbol2 = shinny.get_symbol(exchange="SHFE", code="au")
-        print(symbol2)
+        #symbol1 = shinny.get_symbol(exchange="SHFE", code="ag")
+        #print(symbol1)
+        #symbol2 = shinny.get_symbol(exchange="SHFE", code="au")
+        #print(symbol2)
 
-        kline_text1 = shinny.get_kline_data(symbol=symbol1, duration_seconds=900, data_length=12)
-        print(kline_text1)
-        kline_text2 = shinny.get_kline_data(symbol=symbol2, duration_seconds=900, data_length=12)
-        print(kline_text2)
+        #kline_text1 = shinny.get_kline_data(symbol=symbol1, duration_seconds=900, data_length=12)
+        #print(kline_text1)
+        #kline_text2 = shinny.get_kline_data(symbol=symbol2, duration_seconds=900, data_length=12)
+        #print(kline_text2)
+
+        
+        shinny.save_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
