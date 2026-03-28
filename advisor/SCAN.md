@@ -108,7 +108,7 @@ b) The window reaches the hard maximum of **256 candlesticks**.
       For each pair of adjacent Touch events:
       - right_A = rightmost candle index of the earlier Touch.
       - left_B = leftmost candle index of the later Touch.
-      - Check the middle segment: all candles from index [right_A + 4] to [left_B - 4].
+      - Check the middle segment: all candles from index [right_A + 2] to [left_B - 2].
       - This middle segment is guaranteed to be non-empty (because Step 2 already enforces ≥10 candles between right_A and left_B).
       - At least one candle in this middle segment must show clear deviation ≥1.2% from the boundary:
         • For upper (resistance) Touch: exists Close ≤ upperPrice × (1 - 0.012)
@@ -137,7 +137,7 @@ b) The window reaches the hard maximum of **256 candlesticks**.
   "isConsolidation": true,
   "upperPrice": 754.5,
   "lowerPrice": 743.0,
-  "upperTouches": 5,
+  "upperTouches": 3,
   "lowerTouches": 3,
   "candlesticks": 119,
   "consolidationType": "hybrid"
