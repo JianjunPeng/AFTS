@@ -101,9 +101,10 @@ class Shinny:
 
         klines = self.api.get_kline_serial(symbol=symbol, duration_seconds=duration_seconds, data_length=data_length)
         df = klines[["open", 'high', 'low', "close"]].copy()
+        df.insert(0, 'index', range(len(df)))
         #df = df.T
         data_dict = df.to_dict(orient='list')
-        json_str = json.dumps(data_dict, separators=(', ', ': '))
+        json_str = json.dumps(data_dict, separators=(',', ': '))
         json_str = json_str.replace('{\"', '```json\n{\n    \"')
         json_str = json_str.replace(']}', ']\n}\n```')
         json_str = json_str.replace('],\"', '],\n    \"')
@@ -119,7 +120,7 @@ class Shinny:
             print(f"[Shinny] Transposing K-line data for symbol: {symbol}")
             df = df.T
 
-        df.to_csv(symbol+".csv", sep=", ", header=False, index=False, float_format=float_format)
+        df.to_csv(symbol+".csv", sep=",", header=False, index=False, float_format=float_format)
 
 
     def download_kline_data(self, symbol: str, start: datetime, end: datetime):
@@ -131,7 +132,7 @@ class Shinny:
 
 if __name__ == "__main__":
     with Shinny(work_mode="DEMO") as shinny:
-        kline_text = shinny.get_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
+        kline_text = shinny.get_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=256)
         print(kline_text)
         #kline_text = shinny.get_kline_data(symbol="SHFE.cu2606", duration_seconds=900, data_length=12)
         #print(kline_text)
@@ -149,4 +150,4 @@ if __name__ == "__main__":
         #print(kline_text2)
 
         
-        shinny.save_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=12)
+        shinny.save_kline_data(symbol="SHFE.au2606", duration_seconds=900, data_length=256)
