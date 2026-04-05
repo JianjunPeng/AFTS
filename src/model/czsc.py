@@ -6,9 +6,16 @@ import pandas as pd
 
 
 import matplotlib.pyplot as plt
+#import matplotlib.dates as mdates
+#from datetime import datetime, timedelta
 from mplfinance.original_flavor import candlestick_ohlc
-import matplotlib.dates as mdates
-from datetime import datetime, timedelta
+from enum import Enum, auto
+
+
+class Direction(Enum):
+    Unknown = auto()
+    Up = auto()
+    Down = auto()
 
 
 class CZSC:
@@ -35,40 +42,47 @@ class CZSC:
         # 转为列表方便处理，每根K线为 dict
         candles: List[Dict] = df.to_dict('records')
         merged: List[Dict] = []
+        direction = Direction.Unknown
         
         for candle in candles:
-            current = {
-                'index': candle['index'],
-                'open': candle['open'],
-                'high': candle['high'],
-                'low': candle['low'],
-                'close': candle['close']
-            }
+            current = candle
             
-            while merged:
-                prev = merged[-1]
-                
-                # 判断是否包含（包含关系）
-                if (current['high'] >= prev['high'] and current['low'] <= prev['low']) or \
-                   (current['high'] <= prev['high'] and current['low'] >= prev['low']):
-                    
-                    # 执行合并：新开盘 = 前开盘，新收盘 = 当前收盘
-                    new_high = max(prev['high'], current['high'])
-                    new_low = min(prev['low'], current['low'])
-                    
-                    merged[-1] = {
-                        'index': prev['index'],      # 保留前一根的index
-                        'open': prev['open'],        # 开盘用前一根
-                        'high': new_high,
-                        'low': new_low,
-                        'close': current['close']    # 收盘用当前这根
-                    }
-                    # 继续检查是否还能和更前面合并
-                    current = merged.pop()  # 把刚合并的结果拿出来继续判断
+            if len(merged) == 0:
+                merged.append(current)
+                continue
+
+            prev = merged[-1]
+            included = False
+            # current include prev
+            if (current['high'] >= prev['high'] and current['low'] <= prev['low']):
+                included = True
+                prev['index'] = current['index']
+            
+            # prev include current
+            if (current['high'] <= prev['high'] and current['low'] >= prev['low']):
+                included = True
+                # index does not changed in this situation
+            
+            if included:
+                if direction == Direction.Up:
+                    prev['open'] = max(prev['open'], current['open'])
+                    prev['high'] = max(prev['high'], current['high'])
+                    prev['close'] = max(prev['close'], current['close'])
+                    prev['low'] = max(prev['low'], current['low'])
                 else:
-                    break  # 无包含，停止合并
-            
-            merged.append(current)
+                    prev['open'] = min(prev['open'], current['open'])
+                    prev['high'] = min(prev['high'], current['high'])
+                    prev['close'] = min(prev['close'], current['close'])
+                    prev['low'] = min(prev['low'], current['low'])
+            else:
+                merged.append(current)
+
+            # Detect direction
+            if len(merged) > 1:
+                if merged[-1]['high'] > merged[-2]['high']:
+                    direction = Direction.Up
+                if merged[-1]['low'] > merged[-2]['low']:
+                    direction = Direction.Down
         
         # 转回DataFrame
         result = pd.DataFrame(merged)
